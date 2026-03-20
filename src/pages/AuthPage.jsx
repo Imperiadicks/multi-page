@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { observer } from 'mobx-react-lite';
 import {
   Link,
   useNavigate,
@@ -11,9 +12,9 @@ import {
   REGISTRATION_ROUTE,
 } from '../utils/consts';
 
-function AuthPage() {
+const AuthPage = observer(() => {
   const navigate = useNavigate();
-  const { loginEmployee } = useSalon();
+  const salon = useSalon();
 
   const [form, setForm] = useState({
     email: '',
@@ -26,7 +27,7 @@ function AuthPage() {
     e.preventDefault();
     setError('');
 
-    const result = loginEmployee(form);
+    const result = salon.loginEmployee(form);
 
     if (!result.ok) {
       setError(result.message);
@@ -65,6 +66,6 @@ function AuthPage() {
       </form>
     </div>
   );
-}
+});
 
 export default AuthPage;

@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import {
   Navigate,
   Route,
@@ -14,12 +15,12 @@ import {
   RECORDS_ROUTE,
 } from '../utils/consts';
 
-function AppRouter() {
-  const { currentEmployee } = useSalon();
+const AppRouter = observer(() => {
+  const salon = useSalon();
 
   return (
     <Routes>
-      {currentEmployee &&
+      {salon.isAuth &&
         authRoutes.map(({ path, Component }) => (
           <Route key={path} path={path} element={<Component />} />
         ))}
@@ -28,18 +29,16 @@ function AppRouter() {
         <Route
           key={path}
           path={path}
-          element={currentEmployee ? <Navigate to={RECORDS_ROUTE} replace /> : <Component />}
+          element={salon.isAuth ? <Navigate to={RECORDS_ROUTE} replace /> : <Component />}
         />
       ))}
 
       <Route
         path="*"
-        element={
-          <Navigate to={currentEmployee ? RECORDS_ROUTE : LOGIN_ROUTE} replace />
-        }
+        element={<Navigate to={salon.isAuth ? RECORDS_ROUTE : LOGIN_ROUTE} replace />}
       />
     </Routes>
   );
-}
+});
 
 export default AppRouter;

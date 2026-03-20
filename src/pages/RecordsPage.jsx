@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 
 import RecordCard from '../components/RecordCard';
@@ -7,14 +8,12 @@ import {
   LOGIN_ROUTE,
 } from '../utils/consts';
 
-function RecordsPage() {
+const RecordsPage = observer(() => {
   const navigate = useNavigate();
-  const { currentEmployee, getEmployeeRecords, getClientById, logoutEmployee } = useSalon();
-
-  const records = currentEmployee ? getEmployeeRecords(currentEmployee.id) : [];
+  const salon = useSalon();
 
   const onLogout = () => {
-    logoutEmployee();
+    salon.logoutEmployee();
     navigate(LOGIN_ROUTE);
   };
 
@@ -23,34 +22,37 @@ function RecordsPage() {
       <div className="page-header">
         <div>
           <h1>Мои записи</h1>
-          <p>
-            <b>Сотрудник:</b> {currentEmployee?.fullName}
-          </p>
+          <p><b>Сотрудник:</b> {salon.currentEmployee?.fullName}</p>
+          <p><b>Email:</b> {salon.currentEmployee?.email}</p>
         </div>
 
         <div className="header-actions">
-          <button onClick={() => navigate(CREATE_RECORD_ROUTE)}>+ Новая запись</button>
-          <button className="secondary-btn" onClick={onLogout}>Выйти</button>
+          <button type="button" onClick={() => navigate(CREATE_RECORD_ROUTE)}>
+            + Новая запись
+          </button>
+          <button type="button" className="secondary-btn" onClick={onLogout}>
+            Выйти
+          </button>
         </div>
       </div>
 
-      {!records.length ? (
+      {!salon.currentEmployeeRecords.length ? (
         <div className="empty-block">
           Записей пока нет. Создай первую запись.
         </div>
       ) : (
         <div className="grid">
-          {records.map((record) => (
+          {salon.currentEmployeeRecords.map((record) => (
             <RecordCard
               key={record.id}
               record={record}
-              client={getClientById(record.clientId)}
+              client={salon.getClientById(record.clientId)}
             />
           ))}
         </div>
       )}
     </div>
   );
-}
+});
 
 export default RecordsPage;

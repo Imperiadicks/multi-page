@@ -1,13 +1,14 @@
 import { useState } from 'react';
 
+import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 
 import { useSalon } from '../context/SalonContext';
 import { RECORDS_ROUTE } from '../utils/consts';
 
-function CreateRecordPage() {
+const CreateRecordPage = observer(() => {
   const navigate = useNavigate();
-  const { clients, currentEmployee, createRecord } = useSalon();
+  const salon = useSalon();
 
   const [form, setForm] = useState({
     clientId: '',
@@ -31,7 +32,7 @@ function CreateRecordPage() {
     e.preventDefault();
     setError('');
 
-    const result = createRecord(form);
+    const result = salon.createRecord(form);
 
     if (!result.ok) {
       setError(result.message);
@@ -51,7 +52,7 @@ function CreateRecordPage() {
           onChange={(e) => setForm((prev) => ({ ...prev, clientId: e.target.value }))}
         >
           <option value="">Выбери клиента</option>
-          {clients.map((client) => (
+          {salon.clients.map((client) => (
             <option key={client.id} value={client.id}>
               {client.fullName} ({client.phone})
             </option>
@@ -61,7 +62,7 @@ function CreateRecordPage() {
         <div>
           <p><b>Услуги:</b></p>
           <div className="checkbox-list">
-            {currentEmployee?.services.map((service) => (
+            {(salon.currentEmployee?.services || []).map((service) => (
               <label key={service} className="checkbox-item">
                 <input
                   type="checkbox"
@@ -81,8 +82,8 @@ function CreateRecordPage() {
         />
 
         <textarea
-          placeholder="Комментарий"
           rows="4"
+          placeholder="Комментарий"
           value={form.comment}
           onChange={(e) => setForm((prev) => ({ ...prev, comment: e.target.value }))}
         />
@@ -98,6 +99,6 @@ function CreateRecordPage() {
       </form>
     </div>
   );
-}
+});
 
 export default CreateRecordPage;

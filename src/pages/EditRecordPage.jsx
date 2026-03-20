@@ -1,9 +1,9 @@
 import {
   useEffect,
-  useMemo,
   useState,
 } from 'react';
 
+import { observer } from 'mobx-react-lite';
 import {
   useNavigate,
   useParams,
@@ -12,12 +12,12 @@ import {
 import { useSalon } from '../context/SalonContext';
 import { RECORDS_ROUTE } from '../utils/consts';
 
-function EditRecordPage() {
+const EditRecordPage = observer(() => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentEmployee, clients, getRecordById, updateRecord } = useSalon();
+  const salon = useSalon();
 
-  const record = useMemo(() => getRecordById(id), [id, getRecordById]);
+  const record = salon.getRecordById(id);
 
   const [form, setForm] = useState({
     clientId: '',
@@ -25,6 +25,8 @@ function EditRecordPage() {
     dateTime: '',
     comment: ''
   });
+
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!record) return;
@@ -37,12 +39,14 @@ function EditRecordPage() {
     });
   }, [record]);
 
-  if (!record || record.employeeId !== currentEmployee?.id) {
+  if (!record || record.employeeId !== salon.currentEmployee?.id) {
     return (
       <div className="page center-page">
         <div className="form">
           <h1>Запись не найдена</h1>
-          <button onClick={() => navigate(RECORDS_ROUTE)}>Назад</button>
+          <button type="button" onClick={() => navigate(RECORDS_ROUTE)}>
+            Назад
+          </button>
         </div>
       </div>
     );
@@ -59,6 +63,12 @@ function EditRecordPage() {
 
   const onSubmit = (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!form.clientId || !form.services.length || !form.dateTime) {
+      setError('Заполни клиента, услуги и дату.');
+      return;
+    }
 
     const patch = {};
 
@@ -70,7 +80,7 @@ function EditRecordPage() {
       patch.dateTime = form.dateTime;
     }
 
-    if (form.comment !== record.comment) {
+    if (form.comment !== (record.comment || '')) {
       patch.comment = form.comment;
     }
 
@@ -81,7 +91,13 @@ function EditRecordPage() {
       patch.services = form.services;
     }
 
-    updateRecord(record.id, patch);
+    const result = salon.updateRecord(record.id, patch);
+
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
+
     navigate(RECORDS_ROUTE);
   };
 
@@ -95,7 +111,7 @@ function EditRecordPage() {
           onChange={(e) => setForm((prev) => ({ ...prev, clientId: e.target.value }))}
         >
           <option value="">Выбери клиента</option>
-          {clients.map((client) => (
+          {salon.clients.map((client) => (
             <option key={client.id} value={client.id}>
               {client.fullName} ({client.phone})
             </option>
@@ -105,7 +121,7 @@ function EditRecordPage() {
         <div>
           <p><b>Услуги:</b></p>
           <div className="checkbox-list">
-            {currentEmployee?.services.map((service) => (
+            {(salon.currentEmployee?.services || []).map((service) => (
               <label key={service} className="checkbox-item">
                 <input
                   type="checkbox"
@@ -125,11 +141,13 @@ function EditRecordPage() {
         />
 
         <textarea
-          placeholder="Комментарий"
           rows="4"
+          placeholder="Комментарий"
           value={form.comment}
           onChange={(e) => setForm((prev) => ({ ...prev, comment: e.target.value }))}
         />
+
+        {error && <div className="error">{error}</div>}
 
         <div className="form-actions">
           <button type="submit">Обновить</button>
@@ -140,6 +158,6 @@ function EditRecordPage() {
       </form>
     </div>
   );
-}
+});
 
 export default EditRecordPage;

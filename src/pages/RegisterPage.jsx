@@ -1,22 +1,29 @@
 import { useState } from 'react';
 
+import { observer } from 'mobx-react-lite';
 import {
   Link,
   useNavigate,
 } from 'react-router-dom';
 
-import {
-  SERVICES,
-  useSalon,
-} from '../context/SalonContext';
+import { useSalon } from '../context/SalonContext';
 import {
   LOGIN_ROUTE,
   RECORDS_ROUTE,
 } from '../utils/consts';
 
-function RegisterPage() {
+const allServices = [
+  'Стрижка',
+  'Окрашивание',
+  'Укладка',
+  'Маникюр',
+  'Брови',
+  'Массаж'
+];
+
+const RegisterPage = observer(() => {
   const navigate = useNavigate();
-  const { registerEmployee } = useSalon();
+  const salon = useSalon();
 
   const [form, setForm] = useState({
     fullName: '',
@@ -40,7 +47,7 @@ function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    const result = registerEmployee(form);
+    const result = salon.registerEmployee(form);
 
     if (!result.ok) {
       setError(result.message);
@@ -79,7 +86,7 @@ function RegisterPage() {
         <div>
           <p><b>Услуги сотрудника:</b></p>
           <div className="checkbox-list">
-            {SERVICES.map((service) => (
+            {allServices.map((service) => (
               <label key={service} className="checkbox-item">
                 <input
                   type="checkbox"
@@ -102,6 +109,6 @@ function RegisterPage() {
       </form>
     </div>
   );
-}
+});
 
 export default RegisterPage;

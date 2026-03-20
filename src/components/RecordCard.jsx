@@ -1,8 +1,9 @@
+import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 
 import { EDIT_RECORD_ROUTE } from '../utils/consts';
 
-function RecordCard({ record, client }) {
+const RecordCard = observer(({ record, client }) => {
   const navigate = useNavigate();
 
   return (
@@ -17,13 +18,14 @@ function RecordCard({ record, client }) {
 
       <button
         className="edit-btn"
-        onClick={() => navigate(`${EDIT_RECORD_ROUTE}/${record.id}`)}
+        type="button"
         title="Редактировать запись"
+        onClick={() => navigate(`${EDIT_RECORD_ROUTE}/${record.id}`)}
       >
         ✏
       </button>
     </div>
   );
-}
+});
 
 export default RecordCard;
